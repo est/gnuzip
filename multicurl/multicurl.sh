@@ -10,7 +10,7 @@ FILENAME_ENCODING=
 # -n; No more than this number of threads and
 THREAD_MAX=5
 # every thread must download more than this bytes. So actual thread number may be lower.
-MIN_CHUNK_SIZE=$((1*1024*1024))
+MIN_CHUNK_SIZE=$((8*1024*1024))
 RUNDIR=/run/shm
 CURLOPTS='# user-agent = "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1)"
 create-dirs
@@ -47,6 +47,9 @@ URL="$1"
 
 dir=`pwd`
 tmpdir=`mktemp -d $RUNDIR/multicurl.XXXXXXXXXX`
+trap 'exit 1' INT TERM
+trap 'rm -r $tmpdir; kill -HUP 0' EXIT
+trap : HUP
 [ -r "$COOKIES" ] && cp "$COOKIES" $tmpdir/cookies && CURLOPTS="$CURLOPTS\ncookie = cookies\ncookie-jar = cookies"
 cd $tmpdir
 echo "$CURLOPTS" >config
@@ -65,13 +68,14 @@ echo Saving to: "\`$OUTPUT'" >&2
 prefix="$dir/$OUTPUT.part"
 
 curl -sS -r0-0 -o/dev/null -Dheader
-if ! grep -q '^HTTP/1\.[01] 206' header; then
-	echo Range retrieval is not supported by the server. Run in single thread. >&2
-	exec curl -o "$dir/$OUTPUT"
-fi
-range=`grep '^Content-Range: bytes' header` || die 'content range not found'
+range=`grep '^Content-Range: bytes' header ||:`
 length=${range#*/}
 length=$((length))
+if [ -z "$range" -o $length -lt $((MIN_CHUNK_SIZE*2)) ]; then
+	echo Range not supported or file too small. Run in single thread. >&2
+	curl -# -o "$dir/$OUTPUT"
+	exit 0
+fi
 
 chunksize=$((length/THREAD_MAX))
 [ $chunksize -lt $MIN_CHUNK_SIZE ] && chunksize=$MIN_CHUNK_SIZE
@@ -84,9 +88,6 @@ for p in `seq 0 $chunksize $((length-chunksize))`; do
 done
 >"$prefix".$length
 
-trap 'exit 1' INT TERM
-trap 'rm -r $tmpdir; kill -HUP 0' EXIT
-trap : HUP
 while sleep 1; do
 	jobs >jobs
 	threads=`wc -l <jobs`
