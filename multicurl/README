@@ -1,0 +1,18 @@
+multicurl - Poor man's axel
+v1, Aug 27 2011
+
+Copyright (c) 2011 gnuzip@gmail.com. Licensed under New BSD.
+
+Usage:
+    multicurl.sh [-c cookies(cookies.txt)] [-e filename encoding] [-n threads(5)] [-o output] url
+    For more parameters, edit the code in multicurl.sh.
+
+Bugs:
+  - The downloaded filename can't contain newlines.
+  - Only one URL can be processed at a time.
+  - Only enabled for http/https. Parallel ftp downloading is probably not a good idea.
+  - Thread number can't be changed for the same download.
+  - Filename may be corrupted by dash (<0.5.6.1), cf. http://bugs.debian.org/532302
+
+Prerequisites:
+    dash curl iconv grep coreutils xargs pgrep kill
