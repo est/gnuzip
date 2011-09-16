@@ -119,6 +119,6 @@ done
 [ -t 2 ] && echo >&2
 cd "$dir"
 echo -n 'Concatenating... '
-printf '%s\n' "$prefix".* | sort -V | xargs cat >"$OUTPUT"
+printf '%s\n' "$prefix".* | sort -V | xargs -d '\n' cat >"$OUTPUT"
 rm "$prefix".*
 echo "\`$OUTPUT'" saved. >&2
