@@ -5,7 +5,6 @@ USRRES=~/.Xresources
 exec >>$ERR 2>&1
 echo "$PROG: X session started for $LOGNAME at $(date)"
 
-numlockx on
 [ -f "$USRRES" ] && xrdb -merge $USRRES
 
 killall --quiet urxvtd
