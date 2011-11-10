@@ -1,0 +1,11 @@
+Xft.dpi: 95x94
+Xft.antialias: true
+Xft.rgba: rgb
+Xft.hinting: True
+Xft.hintstyle: hintfull
+Xft.autohint: False
+Xft.lcdfilter: lcddefault
+
+Xautolock.time: 10
+Xautolock.locker: .lockrc
+Xautolock.nowlocker: .lockrc
